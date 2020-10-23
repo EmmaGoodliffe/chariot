@@ -1,0 +1,17 @@
+{
+  "name": "chariot-path-detection",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Emma Goodliffe",
+  "license": "ISC",
+  "dependencies": {
+    "get-image-colors": "^4.0.0",
+    "get-pixels": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/get-image-colors": "^2.0.0",
+    "typescript": "^4.0.3"
+  }
+}
