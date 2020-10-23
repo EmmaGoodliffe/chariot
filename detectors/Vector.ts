@@ -91,4 +91,8 @@ export default class Vector {
   static dist(v1: Vector, v2: Vector): number {
     return v1.dist(v2);
   }
+  static from(vectorLike: { x: number; y: number; z?: number }): Vector {
+    const { x, y, z } = vectorLike;
+    return new Vector(x, y, z);
+  }
 }

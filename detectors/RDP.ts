@@ -5,7 +5,7 @@ export default class RDP {
   nodes: Vector[];
   simplified: Vector[];
   constructor(nodes: Point[], public epsilon: number) {
-    this.nodes = nodes.map(node => new Vector(node.x, node.y));
+    this.nodes = nodes.map(node => Vector.from(node));
     this.simplified = [];
   }
   private findFurthest(a: number, b: number) {

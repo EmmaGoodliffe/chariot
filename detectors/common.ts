@@ -12,3 +12,10 @@ export interface DetectedPath {
   midpoints: Point[];
   path: Point[];
 }
+
+export interface DetectedSign {
+  points: Point[];
+  centre: Point;
+  radius: number;
+  sign: number[];
+}
