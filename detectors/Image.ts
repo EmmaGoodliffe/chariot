@@ -49,7 +49,7 @@ export default class Image {
     const pixels = await this.getPixels();
     const allHighAlpha = pixels.rgba.every(rgba => rgba[3] === 255);
     if (!allHighAlpha) {
-      throw "Not all pixels had a 255 alpha value";
+      throw "Not all pixels have a 255 alpha value";
     }
     const rgbPerPix = pixels.rgba.map(conversions.RGBAToRGB);
     const luminancePerPix = rgbPerPix.map(conversions.rgbToLuminance);
