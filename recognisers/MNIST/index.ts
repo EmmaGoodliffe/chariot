@@ -1,14 +1,21 @@
 import { readFileSync } from "fs";
+import Jimp from "jimp";
 import { join } from "path";
+import { chunk } from "../../helpers";
 
 type Task = "train" | "test";
 
 const data = {
   length: {
-    train: 60000 as const,
-    test: 10000 as const,
+    train: 60000,
+    test: 10000,
   },
-};
+  magicNumber: {
+    label: 2049,
+    image: 2051,
+  },
+  imageWidth: 28,
+} as const;
 
 const decimalToHexByte = (n: number) => {
   if (n < 256) return n.toString(16).padStart(2, "0");
@@ -25,52 +32,78 @@ const get4Bytes = (bytes: number[], byteIndex: number) =>
       .join("")
   );
 
-const readLabelFile = (task: Task) => {
-  const raw = readFileSync(join(__dirname, `data/${task}-labels`));
-  const bytes = Array.from(new Uint8Array(raw));
-  const magicNumber = get4Bytes(bytes, 0);
-  if (magicNumber !== 2049) {
-    throw "Magic number header is not 2051";
+export default class MNIST {
+  dir: string;
+  constructor() {
+    this.dir = "data";
   }
-  const length = get4Bytes(bytes, 4);
-  const body = bytes.slice(8);
-  const consistentLength = length === body.length;
-  const correctLength = length === data.length[task];
-  if (!(consistentLength && correctLength)) {
-    throw "Length header is incorrect";
+  readLabelFile(task: Task): number[] {
+    const raw = readFileSync(join(__dirname, `${this.dir}/${task}-labels`));
+    const bytes = Array.from(new Uint8Array(raw));
+    const magicNumber = get4Bytes(bytes, 0);
+    if (magicNumber !== data.magicNumber.label) {
+      throw "Bad label magic number header";
+    }
+    const length = get4Bytes(bytes, 4);
+    const body = bytes.slice(8);
+    const consistentLength = length === body.length;
+    const correctLength = length === data.length[task];
+    if (!(consistentLength && correctLength)) {
+      throw "Bad label length header";
+    }
+    return body;
   }
-  return body;
-};
-
-const run = async (): Promise<void> => {
-  const trainLabels = readLabelFile("train");
-  const testLabels = readLabelFile("test");
-  console.log({ trainLabels, testLabels });
-};
-
-export default run;
-
-/*
-60k training (9,912,422B + 28,881B)
-10k testing (1,648,877B + 4,542B)
-
-28x28
-
-Training labels (28,881B)
-0 | 32b int    | 2049 (0x00000801) | magic number (MSB first)
-4 | "          | 60k  | number of labels
-8 | unsigned B | ?    | label
-...
-? = 0-9
-
-Training images (9,912,422B)
-0  | 32b int    | 2051 (0x00000803) | magic number
-4  | "          | 60k  | number of images
-8  | "          | 28   | height of images
-12 | "          | "    | width of images
-16 | unsigned B | ?    | grey scale of pixel
-...
-? = 0-255
-
-Testing files are the same but number of labels/images is 10k instead of 60k
-*/
+  readImageFile(task: Task): number[][] {
+    const raw = readFileSync(join(__dirname, `${this.dir}/${task}-images`));
+    const bytes = Array.from(new Uint8Array(raw));
+    const magicNumber = get4Bytes(bytes, 0);
+    if (magicNumber !== data.magicNumber.image) {
+      throw "Bad image magic number header";
+    }
+    const length = get4Bytes(bytes, 4);
+    const height = get4Bytes(bytes, 8);
+    if (height !== data.imageWidth) {
+      throw "Bad image height";
+    }
+    const width = get4Bytes(bytes, 12);
+    if (width !== data.imageWidth) {
+      throw "Bad image width";
+    }
+    const body = bytes.slice(16);
+    const consistentLength = length === body.length / data.imageWidth ** 2;
+    const correctLength = length === data.length[task];
+    if (!(consistentLength && correctLength)) {
+      throw "Bad image length header";
+    }
+    const images = chunk(body, data.imageWidth ** 2);
+    return images;
+  }
+  static imageToPng(image: number[]): Promise<Jimp> {
+    return new Promise((resolve, reject) => {
+      const width = data.imageWidth;
+      new Jimp(width, width, (err, png) => {
+        if (err) reject(err);
+        for (const i_ in image) {
+          const i = parseInt(i_);
+          const greyScale = image[i];
+          const x = i % width;
+          const y = Math.floor(i / width);
+          const rgb = Array<number>(3).fill(greyScale);
+          const hexes = rgb.map(decimalToHexByte);
+          const fullHex = `0x${hexes.join("")}ff`;
+          const fullDecimal = parseInt(fullHex);
+          png.setPixelColour(fullDecimal, x, y);
+        }
+        resolve(png);
+      });
+    });
+  }
+  static resizePng(png: Jimp, width: number): Promise<Jimp> {
+    return new Promise((resolve, reject) => {
+      png.resize(width, width, err => {
+        if (err) reject(err);
+        resolve(png);
+      });
+    });
+  }
+}

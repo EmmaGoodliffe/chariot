@@ -1,5 +1,6 @@
 import imageToColours from "get-image-colors";
 import imageToPixels from "get-pixels";
+import { chunk } from "../helpers";
 import { Point, RGBA } from "./common";
 import * as conversions from "./conversions";
 
@@ -9,15 +10,6 @@ const getTwoMaxima = (arr: number[]) => {
   others.splice(arr.indexOf(max), 1);
   const secondMax = Math.max(...others);
   return [max, secondMax];
-};
-
-const chunk = <T>(arr: T[], n: number) => {
-  const results: T[][] = [];
-  for (let i = 0; i < arr.length; i += n) {
-    const result = arr.slice(i, i + n);
-    results.push(result);
-  }
-  return results;
 };
 
 export default class Image {
