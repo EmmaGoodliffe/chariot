@@ -5,6 +5,7 @@ declare module "get-pixels" {
     stride: [number, number, number];
     offset: number;
   }
+
   declare function getPixels(
     url: string,
     cb: (err: Error | null, pixels: View3dUint8Array) => void
