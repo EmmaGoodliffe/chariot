@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import Jimp from "jimp";
 import { join } from "path";
 import { chunk } from "../../helpers";
+import NeuralNetwork from "./NeuralNetwork";
 
 type Task = "train" | "test";
 
@@ -34,8 +35,15 @@ const get4Bytes = (bytes: number[], byteIndex: number) =>
 
 export default class MNIST {
   dir: string;
+  nn: NeuralNetwork;
   constructor() {
     this.dir = "data";
+    const inputUnits = data.imageWidth ** 2;
+    const labels = Array(9 + 1)
+      .fill(0)
+      .map((value, i) => `${i}`);
+    const hiddenUnits = inputUnits;
+    this.nn = new NeuralNetwork(inputUnits, labels, hiddenUnits);
   }
   readLabelFile(task: Task): number[] {
     const raw = readFileSync(join(__dirname, `${this.dir}/${task}-labels`));
@@ -77,6 +85,29 @@ export default class MNIST {
     }
     const images = chunk(body, data.imageWidth ** 2);
     return images;
+  }
+  async train(): Promise<void> {
+    // const chunkSize = 1000;
+    const chunkSize = 10;
+    console.time("read");
+    const inputs = this.readImageFile("train");
+    const outputs = this.readLabelFile("train").map(n => `${n}`);
+    console.timeEnd("read");
+    console.time("train");
+    const inputChunks = chunk(inputs, chunkSize);
+    const outputChunks = chunk(outputs, chunkSize);
+    // for (const i in inputChunks) {
+    const i = 0;
+    const inputChunk = inputChunks[i];
+    const outputChunk = outputChunks[i];
+    const loss = await this.nn.train(inputChunk, outputChunk);
+    console.log({ loss, progress: i / inputChunks.length });
+    console.log(this.nn.getTensorsInMemory());
+    // }
+    console.timeEnd("train");
+  }
+  save(): void {
+    this.nn.save();
   }
   static imageToPng(image: number[]): Promise<Jimp> {
     return new Promise((resolve, reject) => {

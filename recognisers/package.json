@@ -9,7 +9,7 @@
   "author": "Emma Goodliffe",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs-node": "^2.6.0",
+    "@tensorflow/tfjs": "^2.6.0",
     "jimp": "^0.16.1"
   }
 }
