@@ -53,7 +53,7 @@ export default class RDP {
     const ap = Vector.sub(p, a);
     const ab = Vector.sub(b, a);
     ab.normalise();
-    ab.mult(ap.dot(ab));
+    ab.mul(ap.dot(ab));
     const normalPoint = Vector.add(a, ab);
     return Vector.dist(p, normalPoint);
   }

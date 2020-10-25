@@ -21,7 +21,7 @@ export default class Vector {
     this.z -= v.z || 0;
     return this;
   }
-  mult(n: number): this {
+  mul(n: number): this {
     this.x *= n;
     this.y *= n;
     this.z *= n;
@@ -71,7 +71,7 @@ export default class Vector {
     return this;
   }
   setMag(n: number): this {
-    return this.normalise().mult(n);
+    return this.normalise().mul(n);
   }
   static random2D(): Vector {
     return new Vector(Math.random(), Math.random()).normalise();
@@ -82,8 +82,8 @@ export default class Vector {
   static sub(v1: Vector, v2: Vector): Vector {
     return v1.copy().sub(v2);
   }
-  static mult(v: Vector, n: number): Vector {
-    return v.copy().mult(n);
+  static mul(v: Vector, n: number): Vector {
+    return v.copy().mul(n);
   }
   static div(v: Vector, n: number): Vector {
     return v.copy().div(n);

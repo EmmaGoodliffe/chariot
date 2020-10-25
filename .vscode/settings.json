@@ -1,7 +1,6 @@
 {
   "cSpell.words": [
     "MNIST",
-    "mult"
   ],
   "cSpell.ignorePaths": [
     "**/package-lock.json",
