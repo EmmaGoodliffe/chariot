@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs";
 import { join } from "path";
-import { nodeFileSystemRouter } from "./FileSystem";
+import { nodeFileSystemRouter } from "./io";
 
 const MODEL_DIR = "model";
 
