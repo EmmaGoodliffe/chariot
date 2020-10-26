@@ -2,6 +2,8 @@ import * as tf from "@tensorflow/tfjs";
 import { join } from "path";
 import { nodeFileSystemRouter } from "./FileSystem";
 
+const MODEL_DIR = "model";
+
 interface TensorsInMemory {
   hiddenLayer: number;
   outputLayer: number;
@@ -27,6 +29,7 @@ const disposeAll = (tensors: tf.Tensor[]) => {
 export default class NeuralNetwork {
   model: tf.Sequential;
   private tensorsInMemory: TensorsInMemory;
+  private modelPath: string;
   constructor(
     inputUnits: number,
     public labels: string[],
@@ -61,6 +64,7 @@ export default class NeuralNetwork {
       outputLayer: outputLayerTensors,
       model: modelTensors,
     };
+    this.modelPath = `file://${join(__dirname, MODEL_DIR)}`;
   }
   getTensorsInMemory(): TotalledTensorsInMemory {
     const total = Object.values(this.tensorsInMemory).reduce((a, b) => a + b);
@@ -142,10 +146,18 @@ export default class NeuralNetwork {
     return label;
   }
   async save(): Promise<void> {
-    const handler = nodeFileSystemRouter(`file://${join(__dirname, "model")}`);
+    const handler = nodeFileSystemRouter(this.modelPath);
     if (!handler) {
       throw "Save handler was null";
     }
     this.model.save(handler);
+  }
+  async load(): Promise<void> {
+    const handler = nodeFileSystemRouter(this.modelPath);
+    if (!handler) {
+      throw "Load handler was null";
+    }
+    const model = await tf.loadLayersModel(handler);
+    console.log({ model });
   }
 }
