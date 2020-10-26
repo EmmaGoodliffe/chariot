@@ -1,4 +1,10 @@
+// Ripped from TensorFlow.js (licence: Apache License 2.0)
+// TensorFlow.js: https://www.tensorflow.org/js
+// Original file: https://github.com/tensorflow/tfjs/blob/920794d97c0898cd44fa64e0273e97d901bfb873/tfjs-node/src/io/io_utils.ts
+// Licence: https://github.com/tensorflow/tfjs/blob/920794d97c0898cd44fa64e0273e97d901bfb873/LICENSE
+
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 /**
  * @license
  * Copyright 2018 Google LLC. All Rights Reserved.

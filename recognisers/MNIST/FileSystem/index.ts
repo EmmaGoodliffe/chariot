@@ -1,5 +1,11 @@
+// Ripped from TensorFlow.js (licence: Apache License 2.0)
+// TensorFlow.js: https://www.tensorflow.org/js
+// Original file: https://github.com/tensorflow/tfjs/blob/920794d97c0898cd44fa64e0273e97d901bfb873/tfjs-node/src/io/file_system.ts
+// Licence: https://github.com/tensorflow/tfjs/blob/920794d97c0898cd44fa64e0273e97d901bfb873/LICENSE
+
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * @license
  * Copyright 2018 Google LLC. All Rights Reserved.
@@ -22,7 +28,7 @@ import * as fs from "fs";
 import { dirname, join, resolve } from "path";
 import { promisify } from "util";
 
-import { getModelArtifactsInfoForJSON, toArrayBuffer } from "./io_utils";
+import { getModelArtifactsInfoForJSON, toArrayBuffer } from "./utils";
 
 const stat = promisify(fs.stat);
 const writeFile = promisify(fs.writeFile);
