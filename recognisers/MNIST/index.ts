@@ -1,9 +1,10 @@
 import { readFileSync } from "fs";
 import Jimp from "jimp";
 import { join } from "path";
+import { RGBA } from "../../detectors/common";
 import { RGBAToRGB } from "../../detectors/conversions";
 import { getMean } from "../../detectors/helpers";
-import Image from "../../detectors/Image";
+// import Image from "../../detectors/Image";
 import { chunk } from "../../helpers";
 import NeuralNetwork from "./NeuralNetwork";
 
@@ -121,10 +122,7 @@ export default class MNIST {
     const labels = this.readLabelFile("test");
     return await (nn || this.nn).test(images, labels);
   }
-  static getRequiredImageWidth(): number {
-    return data.imageWidth;
-  }
-  static imageToPng(
+  static imageToPNG(
     image: number[],
     width: number,
     height: number
@@ -137,17 +135,15 @@ export default class MNIST {
           const greyScale = image[i];
           const x = i % width;
           const y = Math.floor(i / width);
-          const rgb = Array<number>(3).fill(greyScale);
-          const hexes = rgb.map(decimalToHexByte);
-          const fullHex = `0x${hexes.join("")}ff`;
-          const fullDecimal = parseInt(fullHex);
-          png.setPixelColour(fullDecimal, x, y);
+          const colour = Jimp.rgbaToInt(greyScale, greyScale, greyScale, 255);
+          png.setPixelColour(colour, x, y);
         }
         resolve(png);
       });
     });
   }
-  static resizePng(png: Jimp, width: number): Promise<Jimp> {
+  static resizePNG(png: Jimp, width: number): Promise<Jimp> {
+    // TODO: don't override original PNG
     return new Promise((resolve, reject) => {
       png.resize(width, width, err => {
         if (err) reject(err);
@@ -155,21 +151,33 @@ export default class MNIST {
       });
     });
   }
+  static PNGToPixels(png: Jimp, width: number, height: number): RGBA[] {
+    const rgbaPerPix: RGBA[] = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const colour = png.getPixelColour(x, y);
+        const rgba = Jimp.intToRGBA(colour);
+        const { r, g, b, a } = rgba;
+        rgbaPerPix.push([r, g, b, a]);
+      }
+    }
+    return rgbaPerPix;
+  }
   static async prepareImage(
     image: number[],
-    pngPath: string,
     width?: number,
     height?: number
   ): Promise<number[]> {
     const w = width || Math.sqrt(image.length);
     const h = height || Math.sqrt(image.length);
-    const png = await MNIST.imageToPng(image, w, h);
-    const requiredWidth = MNIST.getRequiredImageWidth();
-    const resizedPng = await MNIST.resizePng(png, requiredWidth);
-    await resizedPng.writeAsync(pngPath);
-    const resizedImage = new Image(pngPath);
-    const pixels = await resizedImage.getPixels();
-    const rgbPerPix = pixels.rgba.map(RGBAToRGB);
+    const png = await MNIST.imageToPNG(image, w, h);
+    const resizedPng = await MNIST.resizePNG(png, data.imageWidth);
+    const rgbaPerPix = MNIST.PNGToPixels(
+      resizedPng,
+      data.imageWidth,
+      data.imageWidth
+    );
+    const rgbPerPix = rgbaPerPix.map(RGBAToRGB);
     const greyScalePerPix = rgbPerPix.map(getMean);
     return greyScalePerPix;
   }

@@ -2,8 +2,6 @@ import { join } from "path";
 import { SignDetector } from "./detectors";
 import MNIST from "./recognisers/MNIST";
 
-const POST_SIGN_PATH = join(__dirname, "post-sign.png");
-
 // const detect = async () => {
 //   const pathDetector = new PathDetector(join(__dirname, "path.png"));
 //   const path = await pathDetector.detect(5);
@@ -19,7 +17,7 @@ const mnist = new MNIST();
 const run = async () => {
   const signDetector = new SignDetector(join(__dirname, "sign.png"));
   const sign = await signDetector.detect();
-  const image = await MNIST.prepareImage(sign.sign, POST_SIGN_PATH);
+  const image = await MNIST.prepareImage(sign.sign);
   const nn = await mnist.nn.load(
     join(__dirname, "recognisers/MNIST/complete-model")
   );
