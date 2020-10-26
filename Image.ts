@@ -1,7 +1,5 @@
 import imageToColours from "get-image-colors";
-// import imageToPixels from "get-pixels";
 import Jimp from "jimp";
-// import { chunk } from "../helpers";
 import { Point, RGBA } from "./common";
 import * as conversions from "./conversions";
 
