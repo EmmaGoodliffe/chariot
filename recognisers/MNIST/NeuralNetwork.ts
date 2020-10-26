@@ -1,4 +1,6 @@
 import * as tf from "@tensorflow/tfjs";
+import { join } from "path";
+import { nodeFileSystemRouter } from "./FileSystem";
 
 interface TensorsInMemory {
   hiddenLayer: number;
@@ -138,5 +140,12 @@ export default class NeuralNetwork {
     }
     const [label] = labels;
     return label;
+  }
+  async save(): Promise<void> {
+    const handler = nodeFileSystemRouter(`file://${join(__dirname, "model")}`);
+    if (!handler) {
+      throw "Save handler was null";
+    }
+    this.model.save(handler);
   }
 }

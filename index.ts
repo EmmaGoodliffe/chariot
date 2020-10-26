@@ -16,6 +16,7 @@ const mnist = new MNIST();
 
 const run = async () => {
   await mnist.train();
+  await mnist.nn.save();
 };
 
 run().catch(console.error);
