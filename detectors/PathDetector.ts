@@ -1,7 +1,7 @@
-import { getMean } from "../helpers";
-import Image from "../Image";
 import { DetectedPath } from "../common";
 import * as conversions from "../conversions";
+import { getMean } from "../helpers";
+import Image from "../Image";
 import RDP from "./RDP";
 
 export default class PathDetector {

@@ -1,7 +1,7 @@
-import { getMean } from "../helpers";
-import Image from "../Image";
 import { DetectedSign, Point, RGB } from "../common";
 import * as conversions from "../conversions";
+import { getMean } from "../helpers";
+import Image from "../Image";
 import Vector from "./Vector";
 
 const isRgbRed = (rgb: RGB) => {
