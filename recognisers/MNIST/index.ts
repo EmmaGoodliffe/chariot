@@ -38,14 +38,14 @@ export default class MNIST {
   nn: NeuralNetwork;
   constructor() {
     this.dir = "data";
-    const inputUnits = data.imageWidth ** 2;
     const labels = Array(9 + 1)
       .fill(0)
       .map((value, i) => `${i}`);
+    const inputUnits = data.imageWidth ** 2;
     const hiddenUnits = inputUnits;
-    this.nn = new NeuralNetwork(inputUnits, labels, hiddenUnits);
+    this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
-  readLabelFile(task: Task): number[] {
+  readLabelFile(task: Task): string[] {
     const raw = readFileSync(join(__dirname, `${this.dir}/${task}-labels`));
     const bytes = Array.from(new Uint8Array(raw));
     const magicNumber = get4Bytes(bytes, 0);
@@ -59,7 +59,7 @@ export default class MNIST {
     if (!(consistentLength && correctLength)) {
       throw "Bad label length header";
     }
-    return body;
+    return body.map(n => `${n}`);
   }
   readImageFile(task: Task): number[][] {
     const raw = readFileSync(join(__dirname, `${this.dir}/${task}-images`));
@@ -86,28 +86,48 @@ export default class MNIST {
     const images = chunk(body, data.imageWidth ** 2);
     return images;
   }
-  async train(): Promise<void> {
+  async train(verbose = true, untilLossIsLessThan?: number): Promise<number> {
     const chunkSize = 1000;
-    console.time("read");
-    const inputs = this.readImageFile("train");
-    const outputs = this.readLabelFile("train").map(n => `${n}`);
-    console.timeEnd("read");
-    console.time("train");
-    const inputChunks = chunk(inputs, chunkSize);
-    const outputChunks = chunk(outputs, chunkSize);
-    for (const i in inputChunks) {
-      const inputChunk = inputChunks[i];
-      const outputChunk = outputChunks[i];
-      const loss = await this.nn.train(inputChunk, outputChunk);
-      console.log({ loss, progress: parseInt(i) / inputChunks.length });
-      console.log(this.nn.getTensorsInMemory());
+    const images = this.readImageFile("train");
+    const labels = this.readLabelFile("train");
+    const imageChunks = chunk(images, chunkSize);
+    const labelChunks = chunk(labels, chunkSize);
+    let loss = -1;
+    for (let i = 0; i < imageChunks.length; i++) {
+      const imageChunk = imageChunks[i];
+      const labelChunk = labelChunks[i];
+      const start = Date.now();
+      loss = await this.nn.train(imageChunk, labelChunk);
+      const end = Date.now();
+      verbose &&
+        console.log({
+          loss,
+          progress: `${(((i + 1) / imageChunks.length) * 100).toFixed(2)}%`,
+          time: `${(end - start) / 1000}s`,
+          memory: this.nn.getTensorsInMemory(),
+        });
+      if (untilLossIsLessThan && loss < untilLossIsLessThan) {
+        verbose && console.log("Loss on exit:", loss);
+        return loss;
+      }
     }
-    console.timeEnd("train");
+    return loss;
   }
-  static imageToPng(image: number[]): Promise<Jimp> {
+  async test(nn?: NeuralNetwork): Promise<number> {
+    const images = this.readImageFile("test");
+    const labels = this.readLabelFile("test");
+    return await (nn || this.nn).test(images, labels);
+  }
+  static getRequiredImageWidth(): number {
+    return data.imageWidth;
+  }
+  static imageToPng(
+    image: number[],
+    width: number,
+    height: number
+  ): Promise<Jimp> {
     return new Promise((resolve, reject) => {
-      const width = data.imageWidth;
-      new Jimp(width, width, (err, png) => {
+      new Jimp(width, height, (err, png) => {
         if (err) reject(err);
         for (const i_ in image) {
           const i = parseInt(i_);

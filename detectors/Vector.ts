@@ -1,3 +1,8 @@
+// Ripped from p5.js (licence: GNU Lesser General Public License v2.1)
+// p5.js: https://p5js.org/
+// Original file: https://github.com/processing/p5.js/blob/1cb4a98ab02befa55d286ff4e07690ec77843b2b/src/math/p5.Vector.js
+// Licence: https://github.com/processing/p5.js/blob/1cb4a98ab02befa55d286ff4e07690ec77843b2b/license.txt
+
 export default class Vector {
   constructor(public x = 0, public y = 0, public z = 0) {}
   set(v: Vector): this {

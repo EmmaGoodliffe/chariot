@@ -1,4 +1,8 @@
 import * as tf from "@tensorflow/tfjs";
+import { join } from "path";
+import { nodeFileSystemRouter } from "./FileSystem";
+
+const MODEL_DIR = "model";
 
 interface TensorsInMemory {
   hiddenLayer: number;
@@ -22,43 +26,87 @@ const disposeAll = (tensors: tf.Tensor[]) => {
   }
 };
 
+// TODO: try with url package
+const pathToFileUrl = (path: string) => `file://${path}`;
+
+const createModel = (
+  inputUnits: number,
+  labels: string[],
+  hiddenUnits: number,
+  learningRate: number
+) => {
+  const model = tf.sequential();
+  const hiddenLayer = tf.layers.dense({
+    units: hiddenUnits,
+    activation: "sigmoid",
+    inputShape: [inputUnits],
+  });
+  model.add(hiddenLayer);
+  const hiddenLayerTensors = tf.memory().numTensors;
+  const outputUnits = labels.length;
+  const outputLayer = tf.layers.dense({
+    units: outputUnits,
+    activation: "softmax",
+  });
+  model.add(outputLayer);
+  const outputLayerTensors = tf.memory().numTensors - hiddenLayerTensors;
+  model.compile({
+    loss: tf.losses.meanSquaredError,
+    optimizer: tf.train.sgd(learningRate),
+  });
+  const modelTensors =
+    tf.memory().numTensors - (hiddenLayerTensors + outputLayerTensors);
+  const tensorsInMemory = {
+    hiddenLayer: hiddenLayerTensors,
+    outputLayer: outputLayerTensors,
+    model: modelTensors,
+  };
+  return {
+    model,
+    tensorsInMemory,
+  };
+};
+
 export default class NeuralNetwork {
   model: tf.Sequential;
   private tensorsInMemory: TensorsInMemory;
+  private modelDir: string;
+  constructor(model: tf.Sequential, labels: string[]);
   constructor(
+    model: null,
+    labels: string[],
     inputUnits: number,
+    hiddenUnits?: number,
+    learningRate?: number
+  );
+  constructor(
+    model: tf.Sequential | null,
     public labels: string[],
+    inputUnits?: number,
     hiddenUnits = 16,
     learningRate = 0.1
   ) {
-    const model = tf.sequential();
-    const activation = "softmax";
-    const hiddenLayer = tf.layers.dense({
-      units: hiddenUnits,
-      activation,
-      inputShape: [inputUnits],
-    });
-    model.add(hiddenLayer);
-    const hiddenLayerTensors = tf.memory().numTensors;
-    const outputUnits = labels.length;
-    const outputLayer = tf.layers.dense({
-      units: outputUnits,
-      activation,
-    });
-    model.add(outputLayer);
-    const outputLayerTensors = tf.memory().numTensors - hiddenLayerTensors;
-    model.compile({
-      loss: tf.losses.meanSquaredError,
-      optimizer: tf.train.sgd(learningRate),
-    });
-    const modelTensors =
-      tf.memory().numTensors - (hiddenLayerTensors + outputLayerTensors);
-    this.model = model;
-    this.tensorsInMemory = {
-      hiddenLayer: hiddenLayerTensors,
-      outputLayer: outputLayerTensors,
-      model: modelTensors,
-    };
+    if (model) {
+      this.model = model;
+      this.tensorsInMemory = {
+        hiddenLayer: 0,
+        outputLayer: 0,
+        model: 0,
+      };
+    } else {
+      if (!inputUnits) {
+        throw "No input units";
+      }
+      const { model, tensorsInMemory } = createModel(
+        inputUnits,
+        labels,
+        hiddenUnits,
+        learningRate
+      );
+      this.model = model;
+      this.tensorsInMemory = tensorsInMemory;
+    }
+    this.modelDir = join(__dirname, MODEL_DIR);
   }
   getTensorsInMemory(): TotalledTensorsInMemory {
     const total = Object.values(this.tensorsInMemory).reduce((a, b) => a + b);
@@ -82,21 +130,20 @@ export default class NeuralNetwork {
       return output;
     });
     const tensorOutputs = tf.tensor(outputs);
-    let finalLoss = -1;
+    let loss = -1;
     for (let i = 0; i < repeats; i++) {
       const response = await this.model.fit(tensorInputs, tensorOutputs, {
         epochs,
         shuffle: true,
       });
-      const loss = response.history.loss[0];
-      console.log(`${i}`.padStart(`${repeats}`.length, "0"), loss);
-      if (!(typeof loss === "number")) {
-        throw `Loss was a tensor, ${loss.toString()}`;
+      const receivedLoss = response.history.loss[0];
+      if (receivedLoss instanceof tf.Tensor) {
+        throw `Loss was a tensor, ${receivedLoss.toString()}`;
       }
-      finalLoss = loss;
+      loss = receivedLoss;
     }
     disposeAll([tensorInputs, tensorOutputs]);
-    return finalLoss;
+    return loss;
   }
   async test(inputs: number[][], labels: string[]): Promise<number> {
     const predictions = await this.predict(inputs);
@@ -138,5 +185,27 @@ export default class NeuralNetwork {
     }
     const [label] = labels;
     return label;
+  }
+  async save(path?: string): Promise<void> {
+    const url = pathToFileUrl(path || this.modelDir);
+    const handler = nodeFileSystemRouter(url);
+    if (!handler) {
+      throw "Save handler was null";
+    }
+    await this.model.save(handler);
+  }
+  async load(path?: string): Promise<NeuralNetwork> {
+    const filePath = join(path || this.modelDir, "model.json");
+    const url = pathToFileUrl(filePath);
+    const handler = nodeFileSystemRouter(url);
+    if (!handler) {
+      throw "Load handler was null";
+    }
+    const model = await tf.loadLayersModel(handler);
+    if (model instanceof tf.Sequential) {
+      return new NeuralNetwork(model, this.labels);
+    } else {
+      throw "Model was not sequential";
+    }
   }
 }
