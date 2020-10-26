@@ -26,18 +26,6 @@ export default class Image {
     const threshold = secondMaxLum + 0.75 * lumDifference;
     return threshold;
   }
-  // getPixels(): Promise<{ width: number; height: number; rgba: RGBA[] }> {
-  //   // TODO: use jimp
-  //   return new Promise((resolve, reject) => {
-  //     imageToPixels(this.imagePath, (err, pixels) => {
-  //       if (err) reject(err);
-  //       const [width, height] = pixels.shape;
-  //       const bytes = Array.from(pixels.data);
-  //       const rgbaColours = chunk(bytes, 4) as RGBA[];
-  //       resolve({ width, height, rgba: rgbaColours });
-  //     });
-  //   });
-  // }
   async getPixels(): Promise<{ width: number; height: number; rgba: RGBA[] }> {
     const png = await Jimp.read(this.imagePath);
     const pixels = Image.PNGToPixels(png);
