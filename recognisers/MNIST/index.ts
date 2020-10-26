@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
 import Jimp from "jimp";
 import { join } from "path";
+import { RGBAToRGB } from "../../detectors/conversions";
+import { getMean } from "../../detectors/helpers";
+import Image from "../../detectors/Image";
 import { chunk } from "../../helpers";
 import NeuralNetwork from "./NeuralNetwork";
 
@@ -151,5 +154,23 @@ export default class MNIST {
         resolve(png);
       });
     });
+  }
+  static async prepareImage(
+    image: number[],
+    pngPath: string,
+    width?: number,
+    height?: number
+  ): Promise<number[]> {
+    const w = width || Math.sqrt(image.length);
+    const h = height || Math.sqrt(image.length);
+    const png = await MNIST.imageToPng(image, w, h);
+    const requiredWidth = MNIST.getRequiredImageWidth();
+    const resizedPng = await MNIST.resizePng(png, requiredWidth);
+    await resizedPng.writeAsync(pngPath);
+    const resizedImage = new Image(pngPath);
+    const pixels = await resizedImage.getPixels();
+    const rgbPerPix = pixels.rgba.map(RGBAToRGB);
+    const greyScalePerPix = rgbPerPix.map(getMean);
+    return greyScalePerPix;
   }
 }
