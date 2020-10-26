@@ -70,20 +70,41 @@ export default class NeuralNetwork {
   private tensorsInMemory: TensorsInMemory;
   private modelDirPath: string;
   private modelFilePath: string;
+  constructor(model: tf.Sequential, labels: string[]);
   constructor(
+    model: null,
+    labels: string[],
     inputUnits: number,
+    hiddenUnits?: number,
+    learningRate?: number
+  );
+  constructor(
+    model: tf.Sequential | null,
     public labels: string[],
+    inputUnits?: number,
     hiddenUnits = 16,
     learningRate = 0.1
   ) {
-    const { model, tensorsInMemory } = createModel(
-      inputUnits,
-      labels,
-      hiddenUnits,
-      learningRate
-    );
-    this.model = model;
-    this.tensorsInMemory = tensorsInMemory;
+    if (model) {
+      this.model = model;
+      this.tensorsInMemory = {
+        hiddenLayer: 0,
+        outputLayer: 0,
+        model: 0,
+      };
+    } else {
+      if (!inputUnits) {
+        throw "No input units";
+      }
+      const { model, tensorsInMemory } = createModel(
+        inputUnits,
+        labels,
+        hiddenUnits,
+        learningRate
+      );
+      this.model = model;
+      this.tensorsInMemory = tensorsInMemory;
+    }
     this.modelDirPath = `file://${join(__dirname, MODEL_DIR)}`;
     this.modelFilePath = `file://${join(__dirname, MODEL_DIR, "model.json")}`;
   }

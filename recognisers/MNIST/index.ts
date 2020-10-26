@@ -38,12 +38,12 @@ export default class MNIST {
   nn: NeuralNetwork;
   constructor() {
     this.dir = "data";
-    const inputUnits = data.imageWidth ** 2;
     const labels = Array(9 + 1)
       .fill(0)
       .map((value, i) => `${i}`);
+    const inputUnits = data.imageWidth ** 2;
     const hiddenUnits = inputUnits;
-    this.nn = new NeuralNetwork(inputUnits, labels, hiddenUnits);
+    this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
   readLabelFile(task: Task): number[] {
     const raw = readFileSync(join(__dirname, `${this.dir}/${task}-labels`));
