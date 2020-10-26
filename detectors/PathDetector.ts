@@ -1,6 +1,6 @@
+import { getMean } from "../helpers";
 import { DetectedPath, RGBA } from "./common";
 import * as conversions from "./conversions";
-import { getMean } from "./helpers";
 import Image from "./Image";
 import RDP from "./RDP";
 

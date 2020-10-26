@@ -25,14 +25,6 @@
 import * as tf from "@tensorflow/tfjs";
 
 /**
- * Convert an ArrayBuffer to a Buffer.
- */
-export function toBuffer(ab: ArrayBuffer): Buffer {
-  const view = new Uint8Array(ab);
-  return Buffer.from(view); // copies data
-}
-
-/**
  * Convert a Buffer or an Array of Buffers to an ArrayBuffer.
  *
  * If the input is an Array of Buffers, they will be concatenated in the

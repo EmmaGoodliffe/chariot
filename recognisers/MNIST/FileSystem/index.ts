@@ -48,7 +48,7 @@ function doesNotExistHandler(
   };
 }
 
-export class NodeFileSystem implements tf.io.IOHandler {
+class NodeFileSystem implements tf.io.IOHandler {
   static readonly URL_SCHEME = "file://";
 
   protected readonly path: string | string[];

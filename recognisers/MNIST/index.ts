@@ -3,9 +3,7 @@ import Jimp from "jimp";
 import { join } from "path";
 import { RGBA } from "../../detectors/common";
 import { RGBAToRGB } from "../../detectors/conversions";
-import { getMean } from "../../detectors/helpers";
-// import Image from "../../detectors/Image";
-import { chunk } from "../../helpers";
+import { chunk, getMean } from "../../helpers";
 import NeuralNetwork from "./NeuralNetwork";
 
 type Task = "train" | "test";

@@ -27,19 +27,6 @@ export const pointsToLines = (points: Point[]): number[][] => {
   return lines;
 };
 
-export const linesToPoints = (lines: number[][]): Point[] => {
-  const points: Point[] = [];
-  for (const i in lines) {
-    const line = lines[i];
-    const y = parseInt(i);
-    for (const point of line) {
-      const x = point;
-      point && points.push({ x, y });
-    }
-  }
-  return points;
-};
-
 export const singlyOccupiedLinesToPoints = (lines: number[]): Point[] => {
   const points: Point[] = [];
   for (const i in lines) {
