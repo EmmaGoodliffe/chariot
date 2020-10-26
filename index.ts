@@ -1,6 +1,6 @@
 import { join } from "path";
 import { PathDetector, SignDetector } from "./detectors";
-import MNIST from "./recognisers/MNIST";
+import { MNIST } from "./recognisers";
 
 const mnist = new MNIST();
 

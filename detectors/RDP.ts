@@ -1,4 +1,4 @@
-import { Point } from "./common";
+import { Point } from "../common";
 import Vector from "./Vector";
 
 export default class RDP {
