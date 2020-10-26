@@ -51,7 +51,7 @@ export function toArrayBuffer(buf: Buffer | Buffer[]): ArrayBuffer {
   }
 }
 
-// TODO(cais): Use explicit tf.io.ModelArtifactsInfo return type below once it
+// DONE(cais): Use explicit tf.io.ModelArtifactsInfo return type below once it // Edited
 // is available.
 /**
  * Populate ModelArtifactsInfo fields for a model with JSON topology.
@@ -60,7 +60,7 @@ export function toArrayBuffer(buf: Buffer | Buffer[]): ArrayBuffer {
  */
 export function getModelArtifactsInfoForJSON(
   modelArtifacts: tf.io.ModelArtifacts
-) {
+): tf.io.ModelArtifactsInfo {
   if (modelArtifacts.modelTopology instanceof ArrayBuffer) {
     throw new Error("Expected JSON model topology, received ArrayBuffer.");
   }

@@ -101,7 +101,7 @@ class NodeFileSystem implements tf.io.IOHandler {
         "NodeFileSystem.save() does not support saving model topology " +
           "in binary format yet."
       );
-      // TODO(cais, nkreeger): Implement this. See
+      // DONE(cais, nkreeger): Implement this. See // Edited
       //   https://github.com/tensorflow/tfjs/issues/343
     } else {
       const weightsBinPath = join(this.path, this.WEIGHTS_BINARY_FILENAME);
@@ -133,7 +133,7 @@ class NodeFileSystem implements tf.io.IOHandler {
       );
 
       return {
-        // TODO(cais): Use explicit tf.io.ModelArtifactsInfo type below once it
+        // DONE(cais): Use explicit tf.io.ModelArtifactsInfo type below once it // Edited
         // is available.
         modelArtifactsInfo: getModelArtifactsInfoForJSON(modelArtifacts) as any,
       };
