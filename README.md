@@ -37,6 +37,8 @@ A Raspberry Pi driven experiment in autonomous driving
   1. At every traffic light, follow the instructions of the colour
 - Wheel housing
 - Electronics housing
-- Peripherals
+
+## Peripherals
+
 - Signs
 - Traffic lights
