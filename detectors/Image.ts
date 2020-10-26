@@ -14,10 +14,10 @@ const getTwoMaxima = (arr: number[]) => {
 
 export default class Image {
   constructor(public imagePath: string) {}
-  async getPalette(): Promise<chroma.Color[]> {
+  private async getPalette(): Promise<chroma.Color[]> {
     return await imageToColours(this.imagePath);
   }
-  async getLuminanceThreshold(): Promise<number> {
+  private async getLuminanceThreshold(): Promise<number> {
     const palette = await this.getPalette();
     const luminancePerColour = palette.map(colour => colour.luminance());
     const [maxLum, secondMaxLum] = getTwoMaxima(luminancePerColour);
@@ -26,6 +26,7 @@ export default class Image {
     return threshold;
   }
   getPixels(): Promise<{ width: number; height: number; rgba: RGBA[] }> {
+    // TODO: use jimp
     return new Promise((resolve, reject) => {
       imageToPixels(this.imagePath, (err, pixels) => {
         if (err) reject(err);

@@ -1,5 +1,5 @@
 import { getMean } from "../helpers";
-import { DetectedPath, RGBA } from "./common";
+import { DetectedPath } from "./common";
 import * as conversions from "./conversions";
 import Image from "./Image";
 import RDP from "./RDP";
@@ -8,10 +8,6 @@ export default class PathDetector {
   image: Image;
   constructor(imagePath: string) {
     this.image = new Image(imagePath);
-  }
-  async getImagePalette(): Promise<RGBA[]> {
-    const palette = await this.image.getPalette();
-    return palette.map(colour => colour.rgba());
   }
   async detect(epsilon: number): Promise<DetectedPath> {
     const edges = await this.image.detectEdges();
