@@ -267,21 +267,27 @@ export class NodeFileSystem implements tf.io.IOHandler {
 
 export const nodeFileSystemRouter = (url: string | string[]) => {
   if (Array.isArray(url)) {
+    console.log(0);
     if (
       url.every(urlElement => urlElement.startsWith(NodeFileSystem.URL_SCHEME))
     ) {
+      console.log(1);
       return new NodeFileSystem(
         url.map(urlElement =>
           urlElement.slice(NodeFileSystem.URL_SCHEME.length)
         )
       );
     } else {
+      console.log(2);
       return null;
     }
   } else {
+    console.log(3);
     if (url.startsWith(NodeFileSystem.URL_SCHEME)) {
+      console.log(4);
       return new NodeFileSystem(url.slice(NodeFileSystem.URL_SCHEME.length));
     } else {
+      console.log(5);
       return null;
     }
   }

@@ -26,45 +26,66 @@ const disposeAll = (tensors: tf.Tensor[]) => {
   }
 };
 
+const createModel = (
+  inputUnits: number,
+  labels: string[],
+  hiddenUnits: number,
+  learningRate: number
+) => {
+  const model = tf.sequential();
+  const activation = "softmax";
+  const hiddenLayer = tf.layers.dense({
+    units: hiddenUnits,
+    activation,
+    inputShape: [inputUnits],
+  });
+  model.add(hiddenLayer);
+  const hiddenLayerTensors = tf.memory().numTensors;
+  const outputUnits = labels.length;
+  const outputLayer = tf.layers.dense({
+    units: outputUnits,
+    activation,
+  });
+  model.add(outputLayer);
+  const outputLayerTensors = tf.memory().numTensors - hiddenLayerTensors;
+  model.compile({
+    loss: tf.losses.meanSquaredError,
+    optimizer: tf.train.sgd(learningRate),
+  });
+  const modelTensors =
+    tf.memory().numTensors - (hiddenLayerTensors + outputLayerTensors);
+  const tensorsInMemory = {
+    hiddenLayer: hiddenLayerTensors,
+    outputLayer: outputLayerTensors,
+    model: modelTensors,
+  };
+  return {
+    model,
+    tensorsInMemory,
+  };
+};
+
 export default class NeuralNetwork {
   model: tf.Sequential;
   private tensorsInMemory: TensorsInMemory;
-  private modelPath: string;
+  private modelDirPath: string;
+  private modelFilePath: string;
   constructor(
     inputUnits: number,
     public labels: string[],
     hiddenUnits = 16,
     learningRate = 0.1
   ) {
-    const model = tf.sequential();
-    const activation = "softmax";
-    const hiddenLayer = tf.layers.dense({
-      units: hiddenUnits,
-      activation,
-      inputShape: [inputUnits],
-    });
-    model.add(hiddenLayer);
-    const hiddenLayerTensors = tf.memory().numTensors;
-    const outputUnits = labels.length;
-    const outputLayer = tf.layers.dense({
-      units: outputUnits,
-      activation,
-    });
-    model.add(outputLayer);
-    const outputLayerTensors = tf.memory().numTensors - hiddenLayerTensors;
-    model.compile({
-      loss: tf.losses.meanSquaredError,
-      optimizer: tf.train.sgd(learningRate),
-    });
-    const modelTensors =
-      tf.memory().numTensors - (hiddenLayerTensors + outputLayerTensors);
+    const { model, tensorsInMemory } = createModel(
+      inputUnits,
+      labels,
+      hiddenUnits,
+      learningRate
+    );
     this.model = model;
-    this.tensorsInMemory = {
-      hiddenLayer: hiddenLayerTensors,
-      outputLayer: outputLayerTensors,
-      model: modelTensors,
-    };
-    this.modelPath = `file://${join(__dirname, MODEL_DIR)}`;
+    this.tensorsInMemory = tensorsInMemory;
+    this.modelDirPath = `file://${join(__dirname, MODEL_DIR)}`;
+    this.modelFilePath = `file://${join(__dirname, MODEL_DIR, "model.json")}`;
   }
   getTensorsInMemory(): TotalledTensorsInMemory {
     const total = Object.values(this.tensorsInMemory).reduce((a, b) => a + b);
@@ -146,18 +167,22 @@ export default class NeuralNetwork {
     return label;
   }
   async save(): Promise<void> {
-    const handler = nodeFileSystemRouter(this.modelPath);
+    const handler = nodeFileSystemRouter(this.modelDirPath);
     if (!handler) {
       throw "Save handler was null";
     }
-    this.model.save(handler);
+    await this.model.save(handler);
+    console.log("Saved");
   }
   async load(): Promise<void> {
-    const handler = nodeFileSystemRouter(this.modelPath);
+    const path = this.modelFilePath;
+    const handler = nodeFileSystemRouter(path);
+    console.log({ path });
     if (!handler) {
       throw "Load handler was null";
     }
     const model = await tf.loadLayersModel(handler);
     console.log({ model });
+    console.log("Loaded");
   }
 }
