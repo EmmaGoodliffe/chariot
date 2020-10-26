@@ -87,8 +87,7 @@ export default class MNIST {
     return images;
   }
   async train(): Promise<void> {
-    // const chunkSize = 1000;
-    const chunkSize = 10;
+    const chunkSize = 1000;
     console.time("read");
     const inputs = this.readImageFile("train");
     const outputs = this.readLabelFile("train").map(n => `${n}`);
@@ -96,18 +95,14 @@ export default class MNIST {
     console.time("train");
     const inputChunks = chunk(inputs, chunkSize);
     const outputChunks = chunk(outputs, chunkSize);
-    // for (const i in inputChunks) {
-    const i = 0;
-    const inputChunk = inputChunks[i];
-    const outputChunk = outputChunks[i];
-    const loss = await this.nn.train(inputChunk, outputChunk);
-    console.log({ loss, progress: i / inputChunks.length });
-    console.log(this.nn.getTensorsInMemory());
-    // }
+    for (const i in inputChunks) {
+      const inputChunk = inputChunks[i];
+      const outputChunk = outputChunks[i];
+      const loss = await this.nn.train(inputChunk, outputChunk);
+      console.log({ loss, progress: parseInt(i) / inputChunks.length });
+      console.log(this.nn.getTensorsInMemory());
+    }
     console.timeEnd("train");
-  }
-  save(): void {
-    this.nn.save();
   }
   static imageToPng(image: number[]): Promise<Jimp> {
     return new Promise((resolve, reject) => {

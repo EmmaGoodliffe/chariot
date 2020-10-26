@@ -15,12 +15,7 @@ import MNIST from "./recognisers/MNIST";
 const mnist = new MNIST();
 
 const run = async () => {
-  try {
-    await mnist.train();
-    mnist.save();
-  } catch (err) {
-    console.error(`MNIST save: ${err}`);
-  }
+  await mnist.train();
 };
 
 run().catch(console.error);
