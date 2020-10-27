@@ -16,7 +16,9 @@ const data = {
     label: 2049,
     image: 2051,
   },
+  // TODO: rename to width
   imageWidth: 28,
+  largeFileBytes: 50 * 10 ** 6,
 } as const;
 
 const decimalToHexByte = (n: number) => {
@@ -38,7 +40,7 @@ export default class MNIST {
   dir: string;
   nn: NeuralNetwork;
   constructor() {
-    this.dir = "data";
+    this.dir = "MNIST/data";
     const labels = Array(9 + 1)
       .fill(0)
       .map((value, i) => `${i}`);
@@ -46,9 +48,19 @@ export default class MNIST {
     const hiddenUnits = inputUnits;
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
+  readBinaryFile(path: string): number[] {
+    const raw = readFileSync(path);
+    const bytes = new Uint8Array(raw);
+    if (bytes.byteLength > data.largeFileBytes) {
+      const mb = (bytes.byteLength / 10 ** 6).toFixed(2);
+      throw `File is too large to efficiently convert to array, ~${mb}MB`;
+    }
+    const bytesArr = Array.from(bytes); // Not memory/time efficient but acceptable because files are small
+    return bytesArr;
+  }
   readLabelFile(task: Task): string[] {
-    const raw = readFileSync(join(__dirname, `${this.dir}/${task}-labels`));
-    const bytes = Array.from(new Uint8Array(raw));
+    const path = join(__dirname, `${this.dir}/${task}-labels`);
+    const bytes = this.readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.label) {
       throw "Bad label magic number header";
@@ -63,8 +75,8 @@ export default class MNIST {
     return body.map(n => `${n}`);
   }
   readImageFile(task: Task): number[][] {
-    const raw = readFileSync(join(__dirname, `${this.dir}/${task}-images`));
-    const bytes = Array.from(new Uint8Array(raw));
+    const path = join(__dirname, `${this.dir}/${task}-images`);
+    const bytes = this.readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.image) {
       throw "Bad image magic number header";
