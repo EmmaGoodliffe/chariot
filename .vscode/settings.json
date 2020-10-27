@@ -1,8 +1,6 @@
 {
   "cSpell.words": [
     "MNIST",
-    "countrycode",
-    "ndjson",
     "softmax",
     "tensorflow",
     "tfjs"
