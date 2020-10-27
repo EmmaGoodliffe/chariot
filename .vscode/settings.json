@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["MNIST", "softmax", "tensorflow", "tfjs"],
+  "cSpell.words": [
+    "MNIST",
+    "countrycode",
+    "ndjson",
+    "softmax",
+    "tensorflow",
+    "tfjs"
+  ],
   "cSpell.ignorePaths": [
     "**/package-lock.json",
     "**/node_modules/**",
