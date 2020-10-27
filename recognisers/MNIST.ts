@@ -38,7 +38,7 @@ export default class MNIST {
   dir: string;
   nn: NeuralNetwork;
   constructor() {
-    this.dir = "data";
+    this.dir = "MNIST/data";
     const labels = Array(9 + 1)
       .fill(0)
       .map((value, i) => `${i}`);

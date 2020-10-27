@@ -2,6 +2,11 @@ import fs from "fs";
 import nd from "ndjson";
 import { join } from "path";
 import { Point } from "../common";
+import Image from "../Image";
+
+const data = {
+  width: 256,
+} as const;
 
 type Stroke = [number[], number[]];
 
@@ -40,12 +45,35 @@ const strokeToPoints = (stroke: Stroke) => {
 };
 
 const run = async () => {
+  console.time("read");
   const sketches = await readSketches("traffic light");
-  const pointSketches = sketches.map(sketch => ({
+  console.timeEnd("read");
+  console.time("points");
+  const pointSketches = [sketches[0]].map(sketch => ({
     ...sketch,
-    drawing: sketch.drawing.map(strokeToPoints),
+    points: sketch.drawing.map(strokeToPoints).flat(),
   }));
-  console.log(pointSketches[0].drawing[0]);
+  console.timeEnd("points");
+  console.time("images");
+  const imageSketches = pointSketches.map(sketch => {
+    const { points } = sketch;
+    const image = Array<number>(data.width ** 2).fill(0);
+    for (const point of points) {
+      const { x, y } = point;
+      const i = y * data.width + x;
+      image[i] = 255;
+    }
+    return {
+      ...sketch,
+      image,
+    };
+  });
+  console.timeEnd("images");
+  console.time("save");
+  const { image } = imageSketches[0];
+  const png = await Image.imageToPNG(image, data.width, data.width);
+  await png.writeAsync("./traffic light.png");
+  console.timeEnd("save");
 };
 
 run().catch(console.error);
