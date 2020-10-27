@@ -1,8 +1,8 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { RGBAToRGB } from "../../conversions";
-import { chunk, getMean } from "../../helpers";
-import Image from "../../Image";
+import { RGBAToRGB } from "../conversions";
+import { chunk, getMean } from "../helpers";
+import Image from "../Image";
 import NeuralNetwork from "./NeuralNetwork";
 
 type Task = "train" | "test";
