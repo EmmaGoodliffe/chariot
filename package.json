@@ -4,9 +4,9 @@
   "description": "A Raspberry Pi driven experiment in autonomous driving",
   "main": "index.js",
   "scripts": {
+    "data": "ts-node recognisers/QuickDraw/data.ts",
     "dev": "ts-node index.ts",
-    "lint": "eslint \"**/*.ts\" --fix && prettier \"**/*.{md,json}\" --write",
-    "serve": "ts-node server"
+    "lint": "eslint \"**/*.ts\" --fix && prettier \"**/*.{md,json}\" --write"
   },
   "author": "Emma Goodliffe",
   "license": "ISC",

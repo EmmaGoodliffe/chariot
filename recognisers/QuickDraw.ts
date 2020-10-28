@@ -21,16 +21,21 @@ export default class QuickDraw {
     const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
-  readNPYFile(path: string): Uint8Array[] {
+  readNPYFile(path: string, flat?: false): Uint8Array[];
+  readNPYFile(path: string, flat: true): Uint8Array;
+  readNPYFile(path: string, flat = false): Uint8Array | Uint8Array[] {
     const raw = readFileSync(path);
     const bytes = new Uint8Array(raw);
     const body = bytes.slice(data.byteOffset);
-    const images = chunk(body, data.width ** 2);
+    const images = flat ? body : chunk(body, data.width ** 2);
     return images;
   }
   readImageFile(category: Category): Uint8Array[] {
     const path = join(__dirname, `${this.dir}/${category}.npy`);
     const images = this.readNPYFile(path);
     return images;
+  }
+  static getRequiredWidth(): typeof data.width {
+    return data.width;
   }
 }
