@@ -1,13 +1,12 @@
-import { readFileSync } from "fs";
 import { join } from "path";
 import { Task } from "../common";
-import { chunk } from "../helpers";
+import { chunk, readBinaryFile } from "../helpers";
 import MNIST from "./MNIST";
 import NeuralNetwork from "./NeuralNetwork";
+import { data as quickDrawData } from "./QuickDraw/data";
 
 const data = {
-  byteOffset: 80,
-  width: 28,
+  width: quickDrawData.width,
   categories: ["hexagon", "lightning", "snowflake", "traffic light"],
 } as const;
 
@@ -23,18 +22,9 @@ export default class QuickDraw {
     const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
-  readNPYFile(path: string, flat?: false): Uint8Array[];
-  readNPYFile(path: string, flat: true): Uint8Array;
-  readNPYFile(path: string, flat = false): Uint8Array | Uint8Array[] {
-    const raw = readFileSync(path);
-    const bytes = new Uint8Array(raw);
-    const body = bytes.slice(data.byteOffset);
-    const images = flat ? body : chunk(body, data.width ** 2);
-    return images;
-  }
   readImageFile(category: Category, task: Task): number[][] {
     const path = join(__dirname, this.dir, `${task}-${category}`);
-    const body = MNIST.readBinaryFile(path);
+    const body = readBinaryFile(path);
     const images = chunk(body, data.width ** 2);
     return images;
   }
@@ -58,9 +48,6 @@ export default class QuickDraw {
   async test(nn?: NeuralNetwork): Promise<number> {
     const [images, labels] = this.readAllFiles("train");
     return await (nn || this.nn).test(images, labels);
-  }
-  static getRequiredWidth(): typeof data.width {
-    return data.width;
   }
   static async prepareImage(
     image: number[],

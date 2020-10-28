@@ -11,6 +11,17 @@ const getTwoMaxima = (arr: number[]) => {
   return [max, secondMax];
 };
 
+const brightPixelIndicesToEdgeIndices = (brightPixelIndices: number[]) => {
+  return brightPixelIndices.filter((current, i) => {
+    if (i === 0) return false;
+    const previous = brightPixelIndices[i - 1];
+    const next = brightPixelIndices[i + 1];
+    const hasBrightNeighbours =
+      current - previous === 1 && next - current === 1;
+    return !hasBrightNeighbours;
+  });
+};
+
 export default class Image {
   constructor(public imagePath: string) {}
   private async getPalette(): Promise<chroma.Color[]> {
@@ -48,23 +59,9 @@ export default class Image {
       const isBright = isBrightPerPix[i];
       isBright && brightPixelIndices.push(parseInt(i));
     }
-    const edgeIndices = Image.brightPixelIndicesToEdgeIndices(
-      brightPixelIndices
-    );
+    const edgeIndices = brightPixelIndicesToEdgeIndices(brightPixelIndices);
     const edges = conversions.indicesToPoints(edgeIndices, pixels.width);
     return edges;
-  }
-  static brightPixelIndicesToEdgeIndices(
-    brightPixelIndices: number[]
-  ): number[] {
-    return brightPixelIndices.filter((current, i) => {
-      if (i === 0) return false;
-      const previous = brightPixelIndices[i - 1];
-      const next = brightPixelIndices[i + 1];
-      const hasBrightNeighbours =
-        current - previous === 1 && next - current === 1;
-      return !hasBrightNeighbours;
-    });
   }
   static imageToPNG(
     image: number[],

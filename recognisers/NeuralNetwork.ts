@@ -29,6 +29,8 @@ const disposeAll = (tensors: tf.Tensor[]) => {
 
 const pathToFileUrl = (path: string) => `file://${path}`;
 
+const shuffle = <T>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+
 const createModel = (
   inputUnits: number,
   labels: string[],
@@ -111,7 +113,7 @@ export default class NeuralNetwork {
     }
     this.modelDir = join(__dirname, MODEL_DIR);
   }
-  getTensorsInMemory(): TotalledTensorsInMemory {
+  private getTensorsInMemory(): TotalledTensorsInMemory {
     const total = Object.values(this.tensorsInMemory).reduce((a, b) => a + b);
     return {
       ...this.tensorsInMemory,
@@ -155,8 +157,10 @@ export default class NeuralNetwork {
     repeats?: number
   ): Promise<number> {
     const chunkSize = 1000;
-    const inputChunks = chunk(inputs, chunkSize);
-    const labelChunks = chunk(labels, chunkSize);
+    const shuffledInputs = shuffle(inputs);
+    const shuffledLabels = shuffle(labels);
+    const inputChunks = chunk(shuffledInputs, chunkSize);
+    const labelChunks = chunk(shuffledLabels, chunkSize);
     let loss = -1;
     for (let i = 0; i < inputChunks.length; i++) {
       const imageChunk = inputChunks[i];
@@ -192,6 +196,7 @@ export default class NeuralNetwork {
     if (tensorPredicted instanceof Array) {
       throw "Predicted outputs were an array";
     }
+    console.log("testing:", this.getTensorsInMemory());
     const predicted = (await tensorPredicted.array()) as number[][];
     const predictedLabels = predicted.map(probabilities => {
       const max = Math.max(...probabilities);

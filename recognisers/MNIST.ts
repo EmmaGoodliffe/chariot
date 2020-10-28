@@ -1,8 +1,7 @@
-import { readFileSync } from "fs";
 import { join } from "path";
 import { Task } from "../common";
 import * as conversions from "../conversions";
-import { chunk, getMean } from "../helpers";
+import { chunk, getMean, readBinaryFile } from "../helpers";
 import Image from "../Image";
 import NeuralNetwork from "./NeuralNetwork";
 
@@ -16,7 +15,6 @@ const data = {
     image: 2051,
   },
   width: 28,
-  largeFileBytes: 50 * 10 ** 6,
 } as const;
 
 const decimalToHexByte = (n: number) => {
@@ -46,9 +44,9 @@ export default class MNIST {
     const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
-  readLabelFile(task: Task): string[] {
+  private readLabelFile(task: Task) {
     const path = join(__dirname, `${this.dir}/${task}-labels`);
-    const bytes = MNIST.readBinaryFile(path);
+    const bytes = readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.label) {
       throw "Bad label magic number header";
@@ -62,9 +60,9 @@ export default class MNIST {
     }
     return body.map(n => `${n}`);
   }
-  readImageFile(task: Task): number[][] {
+  private readImageFile(task: Task) {
     const path = join(__dirname, `${this.dir}/${task}-images`);
-    const bytes = MNIST.readBinaryFile(path);
+    const bytes = readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.image) {
       throw "Bad image magic number header";
@@ -97,16 +95,6 @@ export default class MNIST {
     const images = this.readImageFile("test");
     const labels = this.readLabelFile("test");
     return await (nn || this.nn).test(images, labels);
-  }
-  static readBinaryFile(path: string): number[] {
-    const raw = readFileSync(path);
-    const bytes = new Uint8Array(raw);
-    if (bytes.byteLength > data.largeFileBytes) {
-      const mb = (bytes.byteLength / 10 ** 6).toFixed(2);
-      throw `File is too large to efficiently convert to array, ~${mb}MB`;
-    }
-    const bytesArr = Array.from(bytes); // Not memory/time efficient but acceptable because files are small
-    return bytesArr;
   }
   static async prepareImage(
     image: number[],

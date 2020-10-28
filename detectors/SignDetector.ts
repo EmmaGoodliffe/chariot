@@ -1,8 +1,15 @@
-import { DetectedSign, Point, RGB } from "../common";
+import { Point, RGB } from "../common";
 import * as conversions from "../conversions";
 import { getMean } from "../helpers";
 import Image from "../Image";
 import Vector from "./Vector";
+
+interface DetectedSign {
+  points: Point[];
+  centre: Point;
+  radius: number;
+  sign: number[];
+}
 
 const isRgbRed = (rgb: RGB) => {
   const thresholdFraction = 0.2;

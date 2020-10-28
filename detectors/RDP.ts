@@ -1,6 +1,15 @@
 import { Point } from "../common";
 import Vector from "./Vector";
 
+const getDistancePointFromLine = (p: Vector, [a, b]: [Vector, Vector]) => {
+  const ap = Vector.sub(p, a);
+  const ab = Vector.sub(b, a);
+  ab.normalise();
+  ab.mul(ap.dot(ab));
+  const normalPoint = Vector.add(a, ab);
+  return Vector.dist(p, normalPoint);
+};
+
 export default class RDP {
   nodes: Vector[];
   simplified: Vector[];
@@ -15,7 +24,7 @@ export default class RDP {
     let furthestIndex = -1;
     for (let i = a + 1; i < b; i++) {
       const current = this.nodes[i];
-      const d = RDP.getDistancePointFromLine(current, [start, end]);
+      const d = getDistancePointFromLine(current, [start, end]);
       if (d > recordDistance) {
         recordDistance = d;
         furthestIndex = i;
@@ -48,13 +57,5 @@ export default class RDP {
     this.rdp(0, total - 1);
     this.simplified.push(end);
     return this.simplified;
-  }
-  static getDistancePointFromLine(p: Vector, [a, b]: [Vector, Vector]): number {
-    const ap = Vector.sub(p, a);
-    const ab = Vector.sub(b, a);
-    ab.normalise();
-    ab.mul(ap.dot(ab));
-    const normalPoint = Vector.add(a, ab);
-    return Vector.dist(p, normalPoint);
   }
 }

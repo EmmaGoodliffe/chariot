@@ -15,6 +15,9 @@ const run = async () => {
   // const number = predicted.label;
   // console.log(number, predicted.confidence);
   const quickDraw = new QuickDraw();
+  await quickDraw.train();
+  quickDraw.nn.save();
+  console.log(await quickDraw.test());
 };
 
 run().catch(console.error);

@@ -1,8 +1,14 @@
-import { DetectedPath } from "../common";
+import { Point } from "../common";
 import * as conversions from "../conversions";
 import { getMean } from "../helpers";
 import Image from "../Image";
 import RDP from "./RDP";
+
+interface DetectedPath {
+  edges: Point[];
+  midpoints: Point[];
+  path: Point[];
+}
 
 export default class PathDetector {
   image: Image;
