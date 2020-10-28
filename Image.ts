@@ -87,11 +87,13 @@ export default class Image {
     });
   }
   static resizePNG(png: Jimp, width: number): Promise<Jimp> {
-    // TODO: don't override original PNG
     return new Promise((resolve, reject) => {
-      png.resize(width, width, err => {
+      png.clone((err, png2) => {
         if (err) reject(err);
-        resolve(png);
+        png2.resize(width, width, err2 => {
+          if (err2) reject(err2);
+          resolve(png2);
+        });
       });
     });
   }
