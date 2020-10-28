@@ -26,7 +26,6 @@ const disposeAll = (tensors: tf.Tensor[]) => {
   }
 };
 
-// TODO: try with url package
 const pathToFileUrl = (path: string) => `file://${path}`;
 
 const createModel = (
