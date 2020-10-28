@@ -4,8 +4,8 @@ import QuickDraw from "../QuickDraw";
 
 const dir = join(__dirname, "data");
 const rawDir = join(dir, "raw");
-const trainLength = 80000;
-const testLength = 20000;
+const trainLength = 60000;
+const testLength = 10000;
 const width = QuickDraw.getRequiredWidth();
 const trainByteLength = trainLength * width ** 2;
 const testByteLength = testLength * width ** 2;
