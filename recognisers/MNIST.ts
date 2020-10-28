@@ -16,8 +16,7 @@ const data = {
     label: 2049,
     image: 2051,
   },
-  // TODO: rename to width
-  imageWidth: 28,
+  width: 28,
   largeFileBytes: 50 * 10 ** 6,
 } as const;
 
@@ -44,7 +43,7 @@ export default class MNIST {
     const labels = Array(9 + 1)
       .fill(0)
       .map((value, i) => `${i}`);
-    const inputUnits = data.imageWidth ** 2;
+    const inputUnits = data.width ** 2;
     const hiddenUnits = inputUnits;
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
@@ -83,20 +82,20 @@ export default class MNIST {
     }
     const length = get4Bytes(bytes, 4);
     const height = get4Bytes(bytes, 8);
-    if (height !== data.imageWidth) {
+    if (height !== data.width) {
       throw "Bad image height";
     }
     const width = get4Bytes(bytes, 12);
-    if (width !== data.imageWidth) {
+    if (width !== data.width) {
       throw "Bad image width";
     }
     const body = bytes.slice(16);
-    const consistentLength = length === body.length / data.imageWidth ** 2;
+    const consistentLength = length === body.length / data.width ** 2;
     const correctLength = length === data.length[task];
     if (!(consistentLength && correctLength)) {
       throw "Bad image length header";
     }
-    const images = chunk(body, data.imageWidth ** 2);
+    const images = chunk(body, data.width ** 2);
     return images;
   }
   async train(verbose = true, untilLossIsLessThan?: number): Promise<number> {
@@ -139,7 +138,7 @@ export default class MNIST {
     const w = width || Math.sqrt(image.length);
     const h = height || Math.sqrt(image.length);
     const png = await Image.imageToPNG(image, w, h);
-    const resizedPng = await Image.resizePNG(png, data.imageWidth);
+    const resizedPng = await Image.resizePNG(png, data.width);
     const rgbaPerPix = Image.PNGToPixels(resizedPng);
     const rgbPerPix = rgbaPerPix.map(RGBAToRGB);
     const greyScalePerPix = rgbPerPix.map(getMean);
