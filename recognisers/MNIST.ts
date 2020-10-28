@@ -1,11 +1,10 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { RGBAToRGB } from "../conversions";
+import { Task } from "../common";
+import * as conversions from "../conversions";
 import { chunk, getMean } from "../helpers";
 import Image from "../Image";
 import NeuralNetwork from "./NeuralNetwork";
-
-type Task = "train" | "test";
 
 const data = {
   length: {
@@ -47,19 +46,9 @@ export default class MNIST {
     const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
-  readBinaryFile(path: string): number[] {
-    const raw = readFileSync(path);
-    const bytes = new Uint8Array(raw);
-    if (bytes.byteLength > data.largeFileBytes) {
-      const mb = (bytes.byteLength / 10 ** 6).toFixed(2);
-      throw `File is too large to efficiently convert to array, ~${mb}MB`;
-    }
-    const bytesArr = Array.from(bytes); // Not memory/time efficient but acceptable because files are small
-    return bytesArr;
-  }
   readLabelFile(task: Task): string[] {
     const path = join(__dirname, `${this.dir}/${task}-labels`);
-    const bytes = this.readBinaryFile(path);
+    const bytes = MNIST.readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.label) {
       throw "Bad label magic number header";
@@ -75,7 +64,7 @@ export default class MNIST {
   }
   readImageFile(task: Task): number[][] {
     const path = join(__dirname, `${this.dir}/${task}-images`);
-    const bytes = this.readBinaryFile(path);
+    const bytes = MNIST.readBinaryFile(path);
     const magicNumber = get4Bytes(bytes, 0);
     if (magicNumber !== data.magicNumber.image) {
       throw "Bad image magic number header";
@@ -98,37 +87,26 @@ export default class MNIST {
     const images = chunk(body, data.width ** 2);
     return images;
   }
-  async train(verbose = true, untilLossIsLessThan?: number): Promise<number> {
-    const chunkSize = 1000;
+  async train(): Promise<number> {
     const images = this.readImageFile("train");
     const labels = this.readLabelFile("train");
-    const imageChunks = chunk(images, chunkSize);
-    const labelChunks = chunk(labels, chunkSize);
-    let loss = -1;
-    for (let i = 0; i < imageChunks.length; i++) {
-      const imageChunk = imageChunks[i];
-      const labelChunk = labelChunks[i];
-      const start = Date.now();
-      loss = await this.nn.train(imageChunk, labelChunk);
-      const end = Date.now();
-      verbose &&
-        console.log({
-          loss,
-          progress: `${(((i + 1) / imageChunks.length) * 100).toFixed(2)}%`,
-          time: `${(end - start) / 1000}s`,
-          memory: this.nn.getTensorsInMemory(),
-        });
-      if (untilLossIsLessThan && loss < untilLossIsLessThan) {
-        verbose && console.log("Loss on exit:", loss);
-        return loss;
-      }
-    }
+    const loss = await this.nn.trainVerbose(images, labels, 1, 1);
     return loss;
   }
   async test(nn?: NeuralNetwork): Promise<number> {
     const images = this.readImageFile("test");
     const labels = this.readLabelFile("test");
     return await (nn || this.nn).test(images, labels);
+  }
+  static readBinaryFile(path: string): number[] {
+    const raw = readFileSync(path);
+    const bytes = new Uint8Array(raw);
+    if (bytes.byteLength > data.largeFileBytes) {
+      const mb = (bytes.byteLength / 10 ** 6).toFixed(2);
+      throw `File is too large to efficiently convert to array, ~${mb}MB`;
+    }
+    const bytesArr = Array.from(bytes); // Not memory/time efficient but acceptable because files are small
+    return bytesArr;
   }
   static async prepareImage(
     image: number[],
@@ -140,7 +118,7 @@ export default class MNIST {
     const png = await Image.imageToPNG(image, w, h);
     const resizedPng = await Image.resizePNG(png, data.width);
     const rgbaPerPix = Image.PNGToPixels(resizedPng);
-    const rgbPerPix = rgbaPerPix.map(RGBAToRGB);
+    const rgbPerPix = rgbaPerPix.map(conversions.RGBAToRGB);
     const greyScalePerPix = rgbPerPix.map(getMean);
     return greyScalePerPix;
   }

@@ -1,5 +1,6 @@
 import * as tf from "@tensorflow/tfjs";
 import { join } from "path";
+import { chunk } from "../helpers";
 import { nodeFileSystemRouter } from "./io";
 
 const MODEL_DIR = "model";
@@ -145,6 +146,31 @@ export default class NeuralNetwork {
       loss = receivedLoss;
     }
     disposeAll([tensorInputs, tensorOutputs]);
+    return loss;
+  }
+  async trainVerbose(
+    inputs: number[][],
+    labels: string[],
+    epochs?: number,
+    repeats?: number
+  ): Promise<number> {
+    const chunkSize = 1000;
+    const inputChunks = chunk(inputs, chunkSize);
+    const labelChunks = chunk(labels, chunkSize);
+    let loss = -1;
+    for (let i = 0; i < inputChunks.length; i++) {
+      const imageChunk = inputChunks[i];
+      const labelChunk = labelChunks[i];
+      const start = Date.now();
+      loss = await this.train(imageChunk, labelChunk, epochs, repeats);
+      const end = Date.now();
+      console.log({
+        loss,
+        progress: `${(((i + 1) / inputChunks.length) * 100).toFixed(2)}%`,
+        time: `${(end - start) / 1000}s`,
+        memory: this.getTensorsInMemory(),
+      });
+    }
     return loss;
   }
   async test(inputs: number[][], labels: string[]): Promise<number> {
