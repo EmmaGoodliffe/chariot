@@ -44,7 +44,7 @@ export default class MNIST {
       .fill(0)
       .map((value, i) => `${i}`);
     const inputUnits = data.width ** 2;
-    const hiddenUnits = inputUnits;
+    const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
   }
   readBinaryFile(path: string): number[] {

@@ -75,14 +75,14 @@ export default class NeuralNetwork {
     model: null,
     labels: string[],
     inputUnits: number,
-    hiddenUnits?: number,
+    hiddenUnits: number,
     learningRate?: number
   );
   constructor(
     model: tf.Sequential | null,
     public labels: string[],
     inputUnits?: number,
-    hiddenUnits = 16,
+    hiddenUnits?: number,
     learningRate = 0.1
   ) {
     if (model) {
@@ -95,6 +95,9 @@ export default class NeuralNetwork {
     } else {
       if (!inputUnits) {
         throw "No input units";
+      }
+      if (!hiddenUnits) {
+        throw "No hidden units";
       }
       const { model, tensorsInMemory } = createModel(
         inputUnits,
