@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "fs";
 import { basename, join } from "path";
 
-export const data = {
+export const metadata = {
   byteOffset: 80,
   width: 28,
 } as const;
@@ -10,13 +10,13 @@ const dir = join(__dirname, "data");
 const rawDir = join(dir, "raw");
 const trainLength = 60000;
 const testLength = 10000;
-const trainByteLength = trainLength * data.width ** 2;
-const testByteLength = testLength * data.width ** 2;
+const trainByteLength = trainLength * metadata.width ** 2;
+const testByteLength = testLength * metadata.width ** 2;
 
 function readNPYFile(path: string) {
   const raw = readFileSync(path);
   const bytes = new Uint8Array(raw);
-  const body = bytes.slice(data.byteOffset);
+  const body = bytes.slice(metadata.byteOffset);
   return body;
 }
 

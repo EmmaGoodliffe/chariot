@@ -1,3 +1,4 @@
+import { join } from "path";
 import { QuickDraw } from "./recognisers";
 
 const run = async () => {
@@ -15,9 +16,18 @@ const run = async () => {
   // const number = predicted.label;
   // console.log(number, predicted.confidence);
   const quickDraw = new QuickDraw();
+  console.time("read");
+  quickDraw.readData("train");
+  console.timeEnd("read");
+  console.time("train");
   await quickDraw.train();
-  quickDraw.nn.save();
+  console.timeEnd("train");
+  console.time("save");
+  await quickDraw.nn.save(join(__dirname, "recognisers/QuickDraw/model"));
+  console.timeEnd("save");
+  console.time("test");
   console.log(await quickDraw.test());
+  console.timeEnd("test");
 };
 
 run().catch(console.error);

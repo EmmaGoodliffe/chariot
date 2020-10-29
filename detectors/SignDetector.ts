@@ -31,7 +31,7 @@ export default class SignDetector {
       rgb: RGB;
       point: Point;
     }[]
-  ): [Point, Point] {
+  ) {
     let minX = Infinity;
     let minY = Infinity;
     for (const i in greyScalePerSignPix) {
