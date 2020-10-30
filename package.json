@@ -4,7 +4,7 @@
   "description": "A Raspberry Pi driven experiment in autonomous driving",
   "main": "index.js",
   "scripts": {
-    "data": "ts-node recognisers/QuickDraw/data.ts",
+    "data": "ts-node data.ts",
     "dev": "ts-node index.ts",
     "lint": "eslint \"**/*.ts\" --fix && prettier \"**/*.{md,json}\" --write"
   },

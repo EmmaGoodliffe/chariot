@@ -8,18 +8,14 @@ export const getMean = (arr: number[]): number => {
   return total / arr.length;
 };
 
-type ArrayOrBytes<T> = T[] | Uint8Array;
-
-export function chunk<T>(arr: T[], n: number): T[][];
-export function chunk(arr: Uint8Array, n: number): Uint8Array[];
-export function chunk<T>(arr: ArrayOrBytes<T>, n: number): ArrayOrBytes<T>[] {
-  const results: ArrayOrBytes<T>[] = [];
+export const chunk = <T>(arr: T[], n: number): T[][] => {
+  const results: T[][] = [];
   for (let i = 0; i < arr.length; i += n) {
     const result = arr.slice(i, i + n);
     results.push(result);
   }
   return results;
-}
+};
 
 export const readBinaryFile = (path: string): number[] => {
   const raw = readFileSync(path);
