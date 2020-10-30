@@ -1,1 +1,5 @@
-console.log("Prepared MNIST data");
+const prepare = (): void => {
+  console.log("Prepared MNIST data");
+};
+
+export default prepare;

@@ -157,8 +157,14 @@ export default class NeuralNetwork {
     repeats?: number
   ): Promise<number> {
     const chunkSize = 1000;
-    const shuffledInputs = shuffle(inputs);
-    const shuffledLabels = shuffle(labels);
+    const points = inputs.map((input, i) => {
+      const label = labels[i];
+      const point = { input, label };
+      return point;
+    });
+    const shuffledPoints = shuffle(points);
+    const shuffledInputs = shuffledPoints.map(point => point.input);
+    const shuffledLabels = shuffledPoints.map(point => point.label);
     const inputChunks = chunk(shuffledInputs, chunkSize);
     const labelChunks = chunk(shuffledLabels, chunkSize);
     let loss = -1;

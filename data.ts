@@ -1,2 +1,5 @@
-import "./recognisers/MNIST/data";
-import "./recognisers/QuickDraw/data";
+import prepareMNIST from "./recognisers/MNIST/data";
+import prepareQuickDraw from "./recognisers/QuickDraw/data";
+
+prepareMNIST();
+prepareQuickDraw();
