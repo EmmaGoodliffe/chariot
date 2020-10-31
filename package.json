@@ -6,19 +6,23 @@
   "scripts": {
     "data": "ts-node data.ts",
     "dev": "ts-node index.ts",
-    "lint": "eslint \"**/*.ts\" --fix && prettier \"**/*.{md,json}\" --write"
+    "lint": "eslint \"**/*.ts\" --fix && prettier \"**/*.{md,json,js}\" --write",
+    "test": "jest"
   },
   "author": "Emma Goodliffe",
   "license": "ISC",
   "devDependencies": {
     "@types/get-image-colors": "^2.0.0",
+    "@types/jest": "^26.0.15",
     "@types/node": "^14.14.2",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "eslint": "^7.11.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.6.1",
     "prettier": "^2.1.2",
+    "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
   },
