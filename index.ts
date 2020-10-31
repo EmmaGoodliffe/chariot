@@ -1,2 +1,2 @@
 // TODO: document data sources
-// TODO: handle type for neural network labels
+// TODO: specify shape of tensors

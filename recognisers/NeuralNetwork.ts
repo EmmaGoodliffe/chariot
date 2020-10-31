@@ -16,8 +16,8 @@ interface TotalledTensorsInMemory extends TensorsInMemory {
   realTotal: number;
 }
 
-interface Prediction {
-  label: string;
+interface Prediction<L> {
+  label: L;
   confidence: number;
 }
 
@@ -31,9 +31,9 @@ const pathToFileUrl = (path: string) => `file://${path}`;
 
 const shuffle = <T>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
 
-const createModel = (
+const createModel = <L>(
   inputUnits: number,
-  labels: string[],
+  labels: L[],
   hiddenUnits: number,
   learningRate: number
 ) => {
@@ -69,21 +69,21 @@ const createModel = (
   };
 };
 
-export default class NeuralNetwork {
+export default class NeuralNetwork<L extends string> {
   model: tf.Sequential;
   private tensorsInMemory: TensorsInMemory;
   private modelDir: string;
-  constructor(model: tf.Sequential, labels: string[]);
+  constructor(model: tf.Sequential, labels: L[]);
   constructor(
     model: null,
-    labels: string[],
+    labels: L[],
     inputUnits: number,
     hiddenUnits: number,
     learningRate?: number
   );
   constructor(
     model: tf.Sequential | null,
-    public labels: string[],
+    public labels: L[],
     inputUnits?: number,
     hiddenUnits?: number,
     learningRate = 0.1
@@ -123,7 +123,7 @@ export default class NeuralNetwork {
   }
   async train(
     inputs: number[][],
-    labels: string[],
+    labels: L[],
     epochs = 1,
     repeats = 1
   ): Promise<number> {
@@ -152,7 +152,7 @@ export default class NeuralNetwork {
   }
   async trainVerbose(
     inputs: number[][],
-    labels: string[],
+    labels: L[],
     epochs?: number,
     repeats?: number
   ): Promise<number> {
@@ -183,7 +183,7 @@ export default class NeuralNetwork {
     }
     return loss;
   }
-  async test(inputs: number[][], labels: string[]): Promise<number> {
+  async test(inputs: number[][], labels: L[]): Promise<number> {
     const predictions = await this.predict(inputs);
     const predictedLabels = predictions.map(prediction => prediction.label);
     let totalCorrect = 0;
@@ -196,7 +196,7 @@ export default class NeuralNetwork {
     }
     return totalCorrect / labels.length;
   }
-  async predict(inputs: number[][]): Promise<Prediction[]> {
+  async predict(inputs: number[][]): Promise<Prediction<L>[]> {
     const tensorInputs = tf.tensor(inputs);
     const tensorPredicted = this.model.predict(tensorInputs);
     if (tensorPredicted instanceof Array) {
@@ -215,7 +215,7 @@ export default class NeuralNetwork {
     disposeAll([tensorInputs, tensorPredicted]);
     return predictedLabels;
   }
-  async predictOnce(input: number[]): Promise<Prediction> {
+  async predictOnce(input: number[]): Promise<Prediction<L>> {
     const inputs = [input];
     const labels = await this.predict(inputs);
     if (labels.length !== 1) {
@@ -232,7 +232,7 @@ export default class NeuralNetwork {
     }
     await this.model.save(handler);
   }
-  async load(path?: string): Promise<NeuralNetwork> {
+  async load(path?: string): Promise<NeuralNetwork<L>> {
     const filePath = join(path || this.modelDir, "model.json");
     const url = pathToFileUrl(filePath);
     const handler = nodeFileSystemRouter(url);

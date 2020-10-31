@@ -15,11 +15,14 @@ const metadata = {
     image: 2051,
   },
   width: 28,
+  labels: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
 } as const;
+
+type Label = typeof metadata.labels[number];
 
 interface Data {
   images: number[][];
-  labels: string[];
+  labels: Label[];
 }
 
 const decimalToHexByte = (n: number) => {
@@ -39,13 +42,11 @@ const get4Bytes = (bytes: number[], byteIndex: number) =>
 
 export default class MNIST {
   dir: string;
-  nn: NeuralNetwork;
+  nn: NeuralNetwork<Label>;
   data: Data;
   constructor() {
     this.dir = "MNIST/data";
-    const labels = Array(9 + 1)
-      .fill(0)
-      .map((value, i) => `${i}`);
+    const labels = [...metadata.labels];
     const inputUnits = metadata.width ** 2;
     const hiddenUnits = inputUnits; // Arbitrary
     this.nn = new NeuralNetwork(null, labels, inputUnits, hiddenUnits);
@@ -65,7 +66,7 @@ export default class MNIST {
     if (!(consistentLength && correctLength)) {
       throw "Bad label length header";
     }
-    return body.map(n => `${n}`);
+    return body.map(n => `${n}`) as Label[];
   }
   private readImages(task: Task) {
     const path = join(__dirname, `${this.dir}/${task}-images`);
@@ -106,7 +107,7 @@ export default class MNIST {
     const loss = await this.nn.trainVerbose(images, labels);
     return loss;
   }
-  async test(nn?: NeuralNetwork): Promise<number> {
+  async test(nn?: NeuralNetwork<Label>): Promise<number> {
     const { images, labels } = this.data;
     return await (nn || this.nn).test(images, labels);
   }
