@@ -14,12 +14,12 @@ type Category = typeof metadata.categories[number];
 
 interface Data {
   images: number[][];
-  labels: string[];
+  labels: Category[];
 }
 
 export default class QuickDraw {
   dir: string;
-  nn: NeuralNetwork;
+  nn: NeuralNetwork<Category>;
   data: Data;
   constructor() {
     this.dir = "QuickDraw/data";
@@ -56,7 +56,7 @@ export default class QuickDraw {
     const loss = await this.nn.trainVerbose(images, labels);
     return loss;
   }
-  async test(nn?: NeuralNetwork): Promise<number> {
+  async test(nn?: NeuralNetwork<Category>): Promise<number> {
     const { images, labels } = this.data;
     return await (nn || this.nn).test(images, labels);
   }
