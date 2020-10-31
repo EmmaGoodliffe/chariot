@@ -37,3 +37,4 @@ const run = async () => {
 run().catch(console.error);
 
 // TODO: document data sources
+// TODO: handle type for neural network labels
