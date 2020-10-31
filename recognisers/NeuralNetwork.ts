@@ -202,7 +202,6 @@ export default class NeuralNetwork {
     if (tensorPredicted instanceof Array) {
       throw "Predicted outputs were an array";
     }
-    console.log("testing:", this.getTensorsInMemory());
     const predicted = (await tensorPredicted.array()) as number[][];
     const predictedLabels = predicted.map(probabilities => {
       const max = Math.max(...probabilities);
